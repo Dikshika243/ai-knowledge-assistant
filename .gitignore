@@ -8,6 +8,8 @@ venv/
 
 chroma_db/
 
+documents/
+
 .idea/
 
 .vscode/

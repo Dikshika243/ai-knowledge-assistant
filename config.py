@@ -27,7 +27,7 @@ CHUNK_OVERLAP = 100
 # Vector Database
 # ==========================
 
-TOP_K = 3
+TOP_K = 5
 CHROMA_PATH = "./chroma_db"
 COLLECTION_NAME = "knowledge_base"
 

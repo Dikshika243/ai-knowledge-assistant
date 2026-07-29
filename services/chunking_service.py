@@ -1,21 +1,22 @@
-from config import CHUNK_SIZE
-from config import CHUNK_OVERLAP
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+from config import CHUNK_SIZE, CHUNK_OVERLAP
+
 
 class ChunkingService:
 
-    @staticmethod
-    def chunk_text(text: str, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
+    def __init__(self):
+        self.text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=CHUNK_SIZE,
+            chunk_overlap=CHUNK_OVERLAP,
+            separators=[
+                "\n\n",
+                "\n",
+                ". ",
+                " ",
+                ""
+            ]
+        )
 
-        chunks = []
-
-        start = 0
-
-        while start < len(text):
-
-            end = start + chunk_size
-
-            chunks.append(text[start:end])
-
-            start += chunk_size - overlap
-
-        return chunks
+    def chunk_text(self, text: str) -> list[str]:
+        return self.text_splitter.split_text(text)
