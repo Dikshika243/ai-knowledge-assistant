@@ -4,7 +4,7 @@ from services.document_indexing_service import DocumentIndexingService
 from services.embedding_service import EmbeddingService
 from services.intent_service import IntentService
 from services.pdf_service import PDFService
-from prompts.prompt_builder import PromptBuilder
+from services.prompt_service import PromptService
 from services.vector_db_service import VectorDBService
 
 
@@ -16,12 +16,14 @@ def main():
     embedding_service = EmbeddingService()
     vector_db_service = VectorDBService()
     ai_service = AIService()
-
+    prompt_service = PromptService()
     document_indexing_service = DocumentIndexingService(
         pdf_service=pdf_service,
         chunking_service=chunking_service,
         embedding_service=embedding_service,
-        vector_db_service=vector_db_service
+        vector_db_service=vector_db_service,
+        ai_service=ai_service,
+        prompt_service=prompt_service
     )
 
     # Index all documents
@@ -67,7 +69,7 @@ def main():
         # Build prompt
         context = "\n\n".join(documents)
 
-        prompt = PromptBuilder.build_prompt(
+        prompt = prompt_service.build_prompt(
             question=question,
             context_documents=documents
         )

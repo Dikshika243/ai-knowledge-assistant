@@ -4,7 +4,8 @@ from services.pdf_service import PDFService
 from services.chunking_service import ChunkingService
 from services.embedding_service import EmbeddingService
 from services.vector_db_service import VectorDBService
-
+from services.ai_service import AIService
+from services.prompt_service import PromptService
 
 class DocumentIndexingService:
 
@@ -13,12 +14,16 @@ class DocumentIndexingService:
         pdf_service: PDFService,
         chunking_service: ChunkingService,
         embedding_service: EmbeddingService,
-        vector_db_service: VectorDBService
+        vector_db_service: VectorDBService,
+        ai_service: AIService,
+        prompt_service: PromptService
     ):
         self.pdf_service = pdf_service
         self.chunking_service = chunking_service
         self.embedding_service = embedding_service
         self.vector_db_service = vector_db_service
+        self.ai_service = ai_service
+        self.prompt_service = prompt_service
 
     def index_documents(self):
         """
