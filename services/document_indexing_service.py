@@ -1,11 +1,11 @@
 from pathlib import Path
+
 from config import DOCUMENT_FOLDER
 from services.pdf_service import PDFService
 from services.chunking_service import ChunkingService
 from services.embedding_service import EmbeddingService
 from services.vector_db_service import VectorDBService
-from services.ai_service import AIService
-from services.prompt_service import PromptService
+
 
 class DocumentIndexingService:
 
@@ -15,20 +15,17 @@ class DocumentIndexingService:
         chunking_service: ChunkingService,
         embedding_service: EmbeddingService,
         vector_db_service: VectorDBService,
-        ai_service: AIService,
-        prompt_service: PromptService
     ):
         self.pdf_service = pdf_service
         self.chunking_service = chunking_service
         self.embedding_service = embedding_service
         self.vector_db_service = vector_db_service
-        self.ai_service = ai_service
-        self.prompt_service = prompt_service
 
     def index_documents(self):
         """
         Reads all PDFs from the documents folder,
-        generates embeddings, and stores them in ChromaDB.
+        splits them into chunks, generates embeddings,
+        and stores them in ChromaDB.
         """
 
         # Start with a clean collection
@@ -47,29 +44,31 @@ class DocumentIndexingService:
 
             print(f"\nIndexing: {pdf_path.name}")
 
-            # Extract text
-            text = self.pdf_service.extract_text(str(pdf_path))
+            # Load PDF as LangChain Documents
+            documents = self.pdf_service.load(str(pdf_path))
 
-            if not text.strip():
+            if not documents:
                 print(f"Skipping {pdf_path.name} (no text found)")
                 continue
 
-            # Create chunks
-            chunks = self.chunking_service.chunk_text(text)
+            # Split into smaller Document chunks
+            chunks = self.chunking_service.chunk_documents(documents)
 
             print(f"Created {len(chunks)} chunks")
 
-            # Store each chunk
+            # Generate embeddings and store them
             for index, chunk in enumerate(chunks):
 
-                embedding = self.embedding_service.generate_embedding(chunk)
+                embedding = self.embedding_service.generate_embedding(
+                    chunk.page_content
+                )
 
                 self.vector_db_service.add_document(
                     document_id=f"{pdf_path.stem}_{index}",
-                    chunk=chunk,
+                    chunk=chunk.page_content,
                     embedding=embedding,
-                    document_name=pdf_path.name,
-                    chunk_number=index
+                    document_name=chunk.metadata.get("source", pdf_path.name),
+                    chunk_number=index,
                 )
 
             total_documents += 1

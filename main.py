@@ -15,15 +15,11 @@ def main():
     chunking_service = ChunkingService()
     embedding_service = EmbeddingService()
     vector_db_service = VectorDBService()
-    ai_service = AIService()
-    prompt_service = PromptService()
     document_indexing_service = DocumentIndexingService(
         pdf_service=pdf_service,
         chunking_service=chunking_service,
         embedding_service=embedding_service,
-        vector_db_service=vector_db_service,
-        ai_service=ai_service,
-        prompt_service=prompt_service
+        vector_db_service=vector_db_service
     )
 
     # Index all documents

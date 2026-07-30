@@ -1,3 +1,4 @@
+from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from config import CHUNK_SIZE, CHUNK_OVERLAP
@@ -18,5 +19,9 @@ class ChunkingService:
             ]
         )
 
-    def chunk_text(self, text: str) -> list[str]:
-        return self.text_splitter.split_text(text)
+    def chunk_documents(
+        self,
+        documents: list[Document]
+    ) -> list[Document]:
+
+        return self.text_splitter.split_documents(documents)
