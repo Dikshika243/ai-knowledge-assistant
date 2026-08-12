@@ -6,6 +6,8 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 import os
+from services.conversation_memory_service import ConversationMemoryService
+from langchain_core.messages import HumanMessage, AIMessage
 
 from config import (
     CHROMA_PATH,
@@ -26,7 +28,10 @@ retriever = vector_store.as_retriever(
 )
 
 prompt = PromptTemplate.from_template("""
-Answer the question using only the context below.
+You are a helpful document assistant.
+
+Conversation History:
+{history}
 
 Context:
 {context}
@@ -34,7 +39,8 @@ Context:
 Question:
 {question}
 
-Answer:
+Answer the question using ONLY the context and conversation history.
+If the answer is not available, say you don't know.
 """)
 
 load_dotenv()
@@ -47,15 +53,37 @@ llm = ChatGoogleGenerativeAI(
 def format_docs(documents):
     return "\n\n".join(doc.page_content for doc in documents)
 
+def format_history(messages):
+    return "\n".join(
+        f"{type(message).__name__}: {message.content}"
+        for message in messages
+    )
+
+from langchain_core.runnables import RunnableLambda
+
 chain = (
     {
-        "context": retriever | format_docs,
-        "question": RunnablePassthrough()
+        "context": (
+            RunnableLambda(lambda x: x["question"])
+            | retriever
+            | format_docs
+        ),
+
+        "question": RunnableLambda(
+            lambda x: x["question"]
+        ),
+
+        "history": (
+            RunnableLambda(lambda x: x["history"])
+            | format_history
+        )
     }
     | prompt
     | llm
     | StrOutputParser()
 )
+
+memory = ConversationMemoryService()
 
 while True:
 
@@ -64,7 +92,19 @@ while True:
     if question.lower() == "exit":
         break
 
-    answer = chain.invoke(question)
+
+    memory.add_user_message(question)
+
+    answer = chain.invoke(
+        {
+            "question": question,
+            "history": memory.get_history()
+        }
+            )
+
+    memory.add_ai_message(
+        AIMessage(content=answer)
+    )
 
     print("\nAI:", answer)
     print()
