@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import os
 from services.conversation_memory_service import ConversationMemoryService
 from langchain_core.messages import HumanMessage, AIMessage
+from calculator_tool import CalculatorTool
 
 from config import (
     CHROMA_PATH,
@@ -59,56 +60,66 @@ def format_history(messages):
         for message in messages
     )
 
-from langchain_core.runnables import RunnableLambda
+calculator = CalculatorTool()
 
-chain = (
-    {
-        "context": (
-            RunnableLambda(lambda x: x["question"])
-            | retriever
-            | format_docs
-        ),
-
-        "question": RunnableLambda(
-            lambda x: x["question"]
-        ),
-
-        "history": (
-            RunnableLambda(lambda x: x["history"])
-            | format_history
-        )
-    }
-    | prompt
-    | llm
-    | StrOutputParser()
+print(
+    calculator.calculate(10, "+", 5)
 )
 
-memory = ConversationMemoryService()
+print(
+    calculator.calculate(8, "*", 9)
+)
 
-while True:
+from langchain_core.runnables import RunnableLambda
 
-    question = input("You: ")
+# chain = (
+#     {
+#         "context": (
+#             RunnableLambda(lambda x: x["question"])
+#             | retriever
+#             | format_docs
+#         ),
 
-    if question.lower() == "exit":
-        break
+#         "question": RunnableLambda(
+#             lambda x: x["question"]
+#         ),
+
+#         "history": (
+#             RunnableLambda(lambda x: x["history"])
+#             | format_history
+#         )
+#     }
+#     | prompt
+#     | llm
+#     | StrOutputParser()
+# )
+
+# memory = ConversationMemoryService()
+
+# while True:
+
+#     question = input("You: ")
+
+#     if question.lower() == "exit":
+#         break
 
 
-    memory.add_user_message(question)
+#     memory.add_user_message(question)
 
-    answer = chain.invoke(
-        {
-            "question": question,
-            "history": memory.get_history()
-        }
-            )
+#     answer = chain.invoke(
+#         {
+#             "question": question,
+#             "history": memory.get_history()
+#         }
+#             )
 
-    memory.add_ai_message(
-        AIMessage(content=answer)
-    )
+#     memory.add_ai_message(
+#         AIMessage(content=answer)
+#     )
 
-    print("\nAI:", answer)
-    print()
+#     print("\nAI:", answer)
+#     print()
 
-    collection = vector_store._collection
+#     collection = vector_store._collection
 
-    print("Documents in Chroma:", collection.count())
+#     print("Documents in Chroma:", collection.count())
