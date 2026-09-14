@@ -3,5 +3,10 @@ pypdf
 chromadb
 sentence-transformers
 python-dotenv
-langchain-text-splitters
+
 langchain
+langchain-core
+langchain-community
+langchain-text-splitters
+langchain-chroma
+langchain-huggingface
