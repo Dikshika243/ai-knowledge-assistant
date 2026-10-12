@@ -1,3 +1,5 @@
+import asyncio
+
 from mcp.server import MCPServer
 
 
@@ -10,5 +12,9 @@ def add(a: int, b: int) -> int:
     return a + b
 
 
+async def main():
+    await mcp.run_stdio_async()
+
+
 if __name__ == "__main__":
-    mcp.run()
+    asyncio.run(main())
